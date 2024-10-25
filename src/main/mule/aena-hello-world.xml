@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f0f9f70e-0863-4a26-b637-81df789a08dc" basePath="/" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="066cbfc1-839b-4f11-9983-1a0d1162c59e">
+		<http:request-connection protocol="HTTPS">
+			<tls:context >
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</http:request-connection>
+	</http:request-config>
+	<flow name="aena-hello-worldFlow" doc:id="12451a4d-350f-48fc-bba2-aa1167ab22a2" >
+		<http:listener doc:name="Listener" doc:id="d882f0b6-3010-43e0-b7ae-6d1718c4944f" config-ref="HTTP_Listener_config" path="/api/check-host"/>
+		<logger level="INFO" doc:name="Logger" doc:id="20620ea2-9c0a-4ee0-b125-23996e1bcbe5" message="#[output application/json&#10;---&#10;{&#10;	attributes: attributes&#10;}]"/>
+		<http:request method="GET" doc:name="Request" doc:id="f32dae40-1f07-4412-9a4a-b43803ea3393" config-ref="HTTP_Request_configuration"  url="#[attributes.queryParams.host]"/>
+		<logger level="INFO" doc:name="Logger1" doc:id="c4b94e3d-0b50-4539-b5d6-7a99341ebf49" message="#[output application/json&#10;---&#10;{&#10;	attributes: attributes,&#10;	payload: payload&#10;}]" />
+		<ee:transform doc:name="Build response" doc:id="2ae6a849-2758-48c7-af65-f901fe621de5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="aena-hello-worldFlow1" doc:id="293ff096-8ab3-492f-9b3f-32a7249b79d1" >
+		<scheduler doc:name="Scheduler" doc:id="e93957f7-4f3d-45f6-89e2-89ab5b4dc40b" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="30" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="0b30a2b3-28cf-40b3-a6b8-b50d32faf0af" message='#["Now is " ++ now() &gt;&gt; "Europe/Madrid"]'/>
+	</flow>
+</mule>
